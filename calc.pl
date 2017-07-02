@@ -14,11 +14,11 @@ my $balance_interest_threshold_age_multiplier = 12;
 my $balance_interest_threshold_drop = 0.01;
 
 # set one or the other of these to 0
-my $weekly_savings_percent = 1.0;
+my $weekly_savings_percent = 0.5;
 my $weekly_savings_amount = 0;
 
 # set one or the other of these to 0
-my $weekly_bonus_savings_percent = 1.0;
+my $weekly_bonus_savings_percent = 0.5;
 my $weekly_bonus_savings_amount = 0;
 
 my $min_savings_bonus_threshold = 1;
