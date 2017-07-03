@@ -10,16 +10,17 @@ use List::Util qw(min max);
 my $savings_bonus_base = 1;
 
 my $savings_bonus_interest_amount = 0.25;
-my $balance_interest_threshold_age_multiplier = 12;
+my $balance_interest_threshold = 100;
 my $balance_interest_threshold_drop = 0.01;
+my $min_weekly_interest_amount = 0.02;
 
 # set one or the other of these to 0
-my $weekly_savings_percent = 0.5;
-my $weekly_savings_amount = 0;
+my $weekly_savings_percent = 0.25;
+my $weekly_savings_amount = 1;
 
 # set one or the other of these to 0
-my $weekly_bonus_savings_percent = 0.5;
-my $weekly_bonus_savings_amount = 0;
+my $weekly_bonus_savings_percent = 0.25;
+my $weekly_bonus_savings_amount = 1;
 
 my $min_savings_bonus_threshold = 1;
 
@@ -45,15 +46,16 @@ sub calc_year_end {
 	my $final_interest = 0;
 	my $final_cash = 0;
 	foreach (1..52) {
-		my $weekly_savings = $weekly_earnings * $weekly_savings_percent + $weekly_savings_amount;
+		my $weekly_savings = max($weekly_earnings * $weekly_savings_percent, $weekly_savings_amount);
 		$savings_balance += $weekly_savings;
+
 		if ($weekly_savings >= $min_savings_bonus_threshold) {
 			#my $interest = int($savings_balance / $age) * $savings_bonus_interest_amount;
 			my $interest = calc_interest($savings_balance, $age);
 			my $bonus = $savings_bonus_base + $interest;
 			$subsidy_balance += $bonus;
 
-			my $bonus_saved = $bonus * $weekly_bonus_savings_percent + $weekly_bonus_savings_amount;
+			my $bonus_saved = max($bonus * $weekly_bonus_savings_percent, $weekly_bonus_savings_amount);
 			$savings_balance += $bonus_saved;
 
 			my $cash = ($weekly_earnings - $weekly_savings) + ($bonus - $bonus_saved);
@@ -70,19 +72,21 @@ sub calc_year_end {
 sub calc_interest {
 	my ($working_balance, $age) = @_;
 
-	my $segment_size = $age * $balance_interest_threshold_age_multiplier;
-
 	my $working_interest_rate = $savings_bonus_interest_amount;
 
+	my $remainder = 0;
 	my $interest_payment = 0;
 	while ($working_balance > 0) {
-		my $segment_balance = min($working_balance, $segment_size);
+		my $segment_balance = min($working_balance, $balance_interest_threshold);
 		$working_balance -= $segment_balance;
 
-		$interest_payment += int($segment_balance / $age) * $working_interest_rate;
+		my $interest_count = int(($segment_balance + $remainder) / $age);
+		$remainder = $segment_balance - $interest_count * $age;
+
+		$interest_payment += $interest_count * $working_interest_rate;
 
 		$working_interest_rate -= $balance_interest_threshold_drop;
-		$working_interest_rate = max(0, $working_interest_rate);
+		$working_interest_rate = max($min_weekly_interest_amount, $working_interest_rate);
 	}
 
 	return $interest_payment;
