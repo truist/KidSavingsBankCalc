@@ -9,18 +9,20 @@ use List::Util qw(min max);
 
 my $savings_bonus_base = 1;
 
+my $starting_age = 7;
+
 my $savings_bonus_interest_amount = 0.25;
 my $balance_interest_threshold = 100;
 my $balance_interest_threshold_drop = 0.01;
 my $min_weekly_interest_amount = 0.02;
 
 # set one or the other of these to 0
-my $weekly_savings_percent = 0.25;
+my $weekly_savings_percent = 0.0;
 my $weekly_savings_amount = 1;
 
 # set one or the other of these to 0
-my $weekly_bonus_savings_percent = 0.25;
-my $weekly_bonus_savings_amount = 1;
+my $weekly_bonus_savings_percent = 0.5;
+my $weekly_bonus_savings_amount = 0;
 
 my $min_savings_bonus_threshold = 1;
 
@@ -33,7 +35,7 @@ sub main {
 	my $savings_balance = 0;
 	my $cash_balance = 0;
 	my $subsidy_balance = 0;
-	for (my $age = 5; $age < 18; $age++) {
+	for (my $age = $starting_age; $age < 18; $age++) {
 		($savings_balance) = calc_year_end($savings_balance, 0, 0, $age, $weekly_earnings);
 
 		$weekly_earnings *= (1 + $annual_earnings_increase_percent);
